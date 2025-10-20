@@ -1,59 +1,52 @@
-# AngulIt
+# Angul-It: A Multi-Stage Captcha Application
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.5.
+Angul-It is a web application built with Angular that presents users with a series of challenges to prove they are not a bot. It demonstrates core Angular concepts including component architecture, state management with RxJS, routing, and animations.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- **Multi-Stage Challenges:** Users must complete a series of challenges (math problems, text entry).
+- **State Management:** User progress is managed through an RxJS-powered state service.
+- **State Persistence:** Progress is saved to `localStorage`, so it remains intact even after a page refresh.
+- **Routing Guards:** Prevents direct URL access to the results page without completing the challenges.
+- **Dynamic Animations:** Smooth, dynamic animations between challenge stages.
+- **Responsive Design:** A clean UI that works on both desktop and mobile devices.
 
-```bash
-ng serve
-```
+## Getting Started
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
-## Code scaffolding
+### Prerequisites
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+You will need to have the following software installed on your machine:
 
-```bash
-ng generate component component-name
-```
+- [Node.js](https://nodejs.org/en/) (which includes npm)
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### Installation
 
-```bash
-ng generate --help
-```
+1. Clone the repository to your local machine.
+2. Navigate into the project directory:
+   ```bash
+   cd angul-it
+   ```
+3. Install the required dependencies using npm:
+   ```bash
+   npm install
+   ```
 
-## Building
+### Running the Application
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Once the dependencies are installed, you can start the local development server:
 
 ```bash
-ng test
+npm start
 ```
 
-## Running end-to-end tests
+This command runs `ng serve`. Open your browser and navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
-For end-to-end (e2e) testing, run:
+## Available Scripts
 
-```bash
-ng e2e
-```
+In the project directory, you can run the following scripts:
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- `npm start`: Runs the app in development mode.
+- `npm run build`: Builds the app for production to the `dist/` folder.
+- `npm test`: Runs the unit tests with Karma.
