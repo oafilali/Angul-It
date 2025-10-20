@@ -1,0 +1,47 @@
+<div style="position: relative; overflow: hidden;">
+  <div *ngIf="currentChallenge" [@fadeAnimation]="currentStage$ | async">
+    
+    <div class="captcha-display">
+      <svg [attr.width]="svgWidth" [attr.height]="svgHeight" [style.background-color]="svgBackgroundColor" style="border: 1px solid #ccc;">
+        <!-- Background Noise -->
+        <ng-container *ngFor="let noise of svgNoises">
+          <line *ngIf="noise.type === 'line'"
+                [attr.x1]="noise.x1" [attr.y1]="noise.y1"
+                [attr.x2]="noise.x2" [attr.y2]="noise.y2"
+                [attr.stroke]="noise.stroke"
+                stroke-width="1" />
+        </ng-container>
+
+        <!-- Characters -->
+        <ng-container *ngFor="let charData of svgChars">
+          <text [attr.x]="charData.x" [attr.y]="charData.y"
+                [attr.fill]="charData.color"
+                [attr.transform]="'rotate(' + charData.rotate + ' ' + charData.x + ' ' + charData.y + ')'"
+                font-size="30" font-weight="bold" font-family="monospace">
+            {{ charData.char }}
+          </text>
+        </ng-container>
+      </svg>
+    </div>
+
+    <input type="text" 
+           [ngModel]="currentChallenge.userAnswer"
+           (ngModelChange)="selectAnswer($event)"
+           placeholder="Your answer">
+
+    <!-- Common Elements -->
+    <p *ngIf="error" class="error">{{ error }}</p>
+
+    <div class="navigation-buttons">
+      <button (click)="previousStage()" [disabled]="(currentStage$ | async) === 0">Previous</button>
+      <button (click)="submitAnswer()" [disabled]="!currentChallenge.userAnswer || currentChallenge.completed">Submit</button>
+      <button (click)="nextStage()" [disabled]="(currentStage$ | async) === ((challenges$ | async)?.length || 0) - 1 || !currentChallenge.completed">Next</button>
+    </div>
+
+    <div *ngIf="captchaState.areAllChallengesCompleted()">
+      <p>All challenges completed!</p>
+      <button (click)="finish()">Go to Results</button>
+    </div>
+
+  </div>
+</div>

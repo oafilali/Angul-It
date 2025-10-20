@@ -1,0 +1,9 @@
+<h1>Congratulations! You are not a bot.</h1>
+<p>You have successfully completed all the challenges.</p>
+
+<h3>Here are your results:</h3>
+<div *ngFor="let challenge of (challenges$ | async)">
+  <p>Challenge {{ challenge.id }}: Passed</p>
+</div>
+
+<button (click)="newChallenge()">Start New Challenge</button>

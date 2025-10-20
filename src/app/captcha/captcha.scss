@@ -1,0 +1,24 @@
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  gap: 10px;
+}
+
+.image-container {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.image-container.selected {
+  border-color: blue;
+  border-width: 2px;
+}
+
+.error {
+  color: red;
+}
