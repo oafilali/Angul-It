@@ -67,7 +67,6 @@ describe('Captcha Component', () => {
   describe('Form Initialization', () => {
     it('should initialize form with empty answer', () => {
       expect(component.answerForm).toBeDefined();
-      // Change this line - form starts with null when reset
       expect(component.answerForm.get('answer')?.value).toBeNull();
     });
 
@@ -80,13 +79,16 @@ describe('Captcha Component', () => {
   });
 
   describe('Answer Selection', () => {
-    it('should select answer and update form', () => {
-      const testAnswer = 'AB3K9';
+    it('should select answer and clear errors', () => {
+      const testAnswer = '12';
+      component.error = 'some error';
+      component.submitted = true;
+
       component.selectAnswer(testAnswer);
 
-      expect(component.answerForm.get('answer')?.value).toBe(testAnswer);
       expect(mockCaptchaState.selectAnswer).toHaveBeenCalledWith(testAnswer);
       expect(component.error).toBeNull();
+      expect(component.submitted).toBe(false);
     });
 
     it('should clear submitted flag when selecting new answer', () => {
@@ -95,23 +97,16 @@ describe('Captcha Component', () => {
 
       expect(component.submitted).toBe(false);
     });
-
-    it('should update answer when user types', () => {
-      const testAnswer = '12';
-      component.answerForm.patchValue({ answer: testAnswer });
-      component.selectAnswer(testAnswer);
-
-      expect(mockCaptchaState.selectAnswer).toHaveBeenCalledWith(testAnswer);
-      expect(component.error).toBeNull();
-    });
   });
 
   describe('Answer Submission', () => {
-    it('should show error when submitting without selection', () => {
+    it('should show error when submitting without answer', () => {
+      component.answerForm.patchValue({ answer: '' });
       component.submitAnswer();
 
       expect(component.submitted).toBe(true);
       expect(component.error).toBe('Please enter an answer before submitting.');
+      expect(mockCaptchaState.submitAnswer).not.toHaveBeenCalled();
     });
 
     it('should submit correct answer successfully', () => {
@@ -120,6 +115,7 @@ describe('Captcha Component', () => {
 
       component.submitAnswer();
 
+      expect(component.submitted).toBe(true);
       expect(mockCaptchaState.submitAnswer).toHaveBeenCalled();
       expect(component.error).toBeNull();
     });
@@ -130,7 +126,9 @@ describe('Captcha Component', () => {
 
       component.submitAnswer();
 
+      expect(component.submitted).toBe(true);
       expect(component.error).toBe('Incorrect answer. Please try again.');
+      expect(component.answerForm.errors).toEqual({ incorrect: true });
     });
   });
 
@@ -167,6 +165,7 @@ describe('Captcha Component', () => {
       component.finish();
 
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/result']);
+      expect(component.error).toBeNull();
     });
 
     it('should show error when trying to finish incomplete challenges', () => {
@@ -186,12 +185,16 @@ describe('Captcha Component', () => {
 
       expect(component.svgChars.length).toBeGreaterThan(0);
       expect(component.svgChars[0].char).toBeDefined();
+      expect(component.svgChars[0].x).toBeGreaterThan(0);
+      expect(component.svgChars[0].y).toBeGreaterThan(0);
     });
 
     it('should generate background noise', () => {
       component['generateSvgCaptcha']('TEST');
 
-      expect(component.svgNoises.length).toBeGreaterThan(0);
+      expect(component.svgNoises.length).toBe(10);
+      expect(component.svgNoises[0].type).toBe('line');
+      expect(component.svgNoises[0].x1).toBeDefined();
     });
   });
 

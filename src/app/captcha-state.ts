@@ -56,30 +56,110 @@ export class CaptchaState {
   }
 
   private initializeDefaultChallenges(): void {
-    const defaultChallenges: Challenge[] = [
-      {
-        id: 1,
-        type: 'math',
-        question: '7 + 5',
-        correctAnswer: '12',
-        isCompleted: false,
-      },
-      {
-        id: 2,
-        type: 'text',
-        question: 'VERIFY',
-        correctAnswer: 'VERIFY',
-        isCompleted: false,
-      },
-      {
-        id: 3,
-        type: 'math',
-        question: '15 - 8',
-        correctAnswer: '7',
-        isCompleted: false,
-      },
-    ];
-    this.challengesSubject.next(defaultChallenges);
+    const challenges: Challenge[] = [];
+
+    // 1. Create a random math problem
+    let num1, num2, operator;
+    const operators = ['+', '-', '*'];
+    operator = operators[Math.floor(Math.random() * operators.length)];
+
+    if (operator === '*') {
+      num1 = Math.floor(Math.random() * (10 - 2 + 1)) + 2; // 2-10
+      num2 = Math.floor(Math.random() * (10 - 2 + 1)) + 2; // 2-10
+    } else {
+      num1 = Math.floor(Math.random() * 20) + 1; // 1-20
+      num2 = Math.floor(Math.random() * 20) + 1; // 1-20
+    }
+
+    let correctAnswer;
+    switch (operator) {
+      case '+':
+        correctAnswer = num1 + num2;
+        break;
+      case '-':
+        correctAnswer = num1 - num2;
+        break;
+      case '*':
+        correctAnswer = num1 * num2;
+        break;
+    }
+    challenges.push({
+      id: 1,
+      type: 'math',
+      question: `${num1} ${operator} ${num2}`,
+      correctAnswer: String(correctAnswer),
+      isCompleted: false,
+    });
+
+    // 2. Create a random text challenge with random chars, 1 number, 1 symbol
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const numbers = '0123456789';
+    const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    let randomTextArray = [];
+
+    // Add random characters
+    for (let i = 0; i < 4; i++) { // 4 random chars
+      randomTextArray.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+    }
+    // Add one random number
+    randomTextArray.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+    // Add one random symbol
+    randomTextArray.push(symbols.charAt(Math.floor(Math.random() * symbols.length)));
+
+    // Shuffle the array to mix characters, number, and symbol
+    for (let i = randomTextArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [randomTextArray[i], randomTextArray[j]] = [randomTextArray[j], randomTextArray[i]];
+    }
+    const randomText = randomTextArray.join('');
+
+    challenges.push({
+      id: 2,
+      type: 'text',
+      question: randomText,
+      correctAnswer: randomText,
+      isCompleted: false,
+    });
+
+    // 3. Create a second random math problem
+    let num3, num4, operator2;
+    operator2 = operators[Math.floor(Math.random() * operators.length)];
+
+    if (operator2 === '*') {
+      num3 = Math.floor(Math.random() * (10 - 2 + 1)) + 2; // 2-10
+      num4 = Math.floor(Math.random() * (10 - 2 + 1)) + 2; // 2-10
+    } else {
+      num3 = Math.floor(Math.random() * 20) + 1; // 1-20
+      num4 = Math.floor(Math.random() * 20) + 1; // 1-20
+    }
+
+    let correctAnswer2;
+    switch (operator2) {
+      case '+':
+        correctAnswer2 = num3 + num4;
+        break;
+      case '-':
+        correctAnswer2 = num3 - num4;
+        break;
+      case '*':
+        correctAnswer2 = num3 * num4;
+        break;
+    }
+    challenges.push({
+      id: 3,
+      type: 'math',
+      question: `${num3} ${operator2} ${num4}`,
+      correctAnswer: String(correctAnswer2),
+      isCompleted: false,
+    });
+
+    // Shuffle the challenges array to randomize their order
+    for (let i = challenges.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [challenges[i], challenges[j]] = [challenges[j], challenges[i]];
+    }
+
+    this.challengesSubject.next(challenges);
     this.currentStageSubject.next(0);
     this.saveToStorage();
   }
