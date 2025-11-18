@@ -1,158 +1,168 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 export interface Challenge {
   id: number;
   type: 'math' | 'text';
   question: string;
   correctAnswer: string;
-  userAnswer: string | null;
-  completed: boolean;
+  userAnswer?: string;
+  isCompleted?: boolean;
+}
+
+interface CaptchaStateData {
+  challenges: Challenge[];
+  currentStage: number;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CaptchaState {
-  private readonly state$ = new BehaviorSubject<Challenge[]>(this.loadState());
-  private readonly currentStage$ = new BehaviorSubject<number>(this.loadCurrentStage());
+  private readonly STORAGE_KEY = 'angul-it-captcha-state';
+  private challengesSubject = new BehaviorSubject<Challenge[]>([]);
+  private currentStageSubject = new BehaviorSubject<number>(0);
 
   constructor() {
-    this.state$.subscribe(state => this.saveState(state));
-    this.currentStage$.subscribe(stage => this.saveCurrentStage(stage));
+    this.loadFromStorage();
   }
 
-  // --- Private Methods for Challenge Generation ---
-
-  private generateMathChallenge(id: number): Challenge {
-    const num1 = Math.floor(Math.random() * 20) + 1;
-    const num2 = Math.floor(Math.random() * 20) + 1;
-    return {
-      id: id,
-      type: 'math',
-      question: `What is ${num1} + ${num2}?`,
-      correctAnswer: String(num1 + num2),
-      userAnswer: null,
-      completed: false,
-    };
-  }
-
-  private generateTextChallenge(id: number): Challenge {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 5; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
+  private loadFromStorage(): void {
+    try {
+      const savedState = localStorage.getItem(this.STORAGE_KEY);
+      if (savedState) {
+        const state: CaptchaStateData = JSON.parse(savedState);
+        this.challengesSubject.next(state.challenges);
+        this.currentStageSubject.next(state.currentStage);
+      } else {
+        this.initializeDefaultChallenges();
+      }
+    } catch (error) {
+      console.error('Error loading state from localStorage:', error);
+      this.initializeDefaultChallenges();
     }
-    return {
-      id: id,
-      type: 'text',
-      question: `Type this: ${result}`,
-      correctAnswer: result,
-      userAnswer: null,
-      completed: false,
-    };
   }
 
-  private generateNewChallengeSet(): Challenge[] {
-    const challenges: Challenge[] = [];
-    challenges.push(this.generateMathChallenge(0)); // Temporary ID
-    challenges.push(this.generateMathChallenge(0)); // Temporary ID
-    challenges.push(this.generateTextChallenge(0)); // Temporary ID
-
-    // Shuffle the challenges to randomize their order
-    for (let i = challenges.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [challenges[i], challenges[j]] = [challenges[j], challenges[i]];
+  private saveToStorage(): void {
+    try {
+      const state: CaptchaStateData = {
+        challenges: this.challengesSubject.value,
+        currentStage: this.currentStageSubject.value,
+      };
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+      console.error('Error saving state to localStorage:', error);
     }
-
-    // Reassign IDs after shuffling to maintain sequential IDs
-    return challenges.map((challenge, index) => ({ ...challenge, id: index + 1 }));
   }
 
-  // --- State Selectors ---
-
-  getChallenges() {
-    return this.state$.asObservable();
+  private initializeDefaultChallenges(): void {
+    const defaultChallenges: Challenge[] = [
+      {
+        id: 1,
+        type: 'math',
+        question: '7 + 5',
+        correctAnswer: '12',
+        isCompleted: false,
+      },
+      {
+        id: 2,
+        type: 'text',
+        question: 'VERIFY',
+        correctAnswer: 'VERIFY',
+        isCompleted: false,
+      },
+      {
+        id: 3,
+        type: 'math',
+        question: '15 - 8',
+        correctAnswer: '7',
+        isCompleted: false,
+      },
+    ];
+    this.challengesSubject.next(defaultChallenges);
+    this.currentStageSubject.next(0);
+    this.saveToStorage();
   }
 
-  getCurrentStage() {
-    return this.currentStage$.asObservable();
+  // Observable getters
+  getChallenges(): Observable<Challenge[]> {
+    return this.challengesSubject.asObservable();
   }
 
-  getCurrentChallenge() {
-    const stage = this.currentStage$.value;
-    const challenges = this.state$.value;
-    return challenges[stage];
+  getCurrentStage(): Observable<number> {
+    return this.currentStageSubject.asObservable();
   }
 
-  // --- Actions ---
+  // Sync getters for tests
+  getChallengesValue(): Challenge[] {
+    return this.challengesSubject.value;
+  }
 
-  selectAnswer(answer: string) {
-    const stage = this.currentStage$.value;
-    const state = this.state$.value;
-    const challenge = state[stage];
-    if (challenge) {
-      challenge.userAnswer = answer;
-      this.state$.next([...state]);
+  getCurrentStageValue(): number {
+    return this.currentStageSubject.value;
+  }
+
+  selectAnswer(answer: string): void {
+    const challenges = this.challengesSubject.value;
+    const currentStage = this.currentStageSubject.value;
+
+    if (challenges[currentStage]) {
+      challenges[currentStage].userAnswer = answer;
+      this.challengesSubject.next([...challenges]);
+      this.saveToStorage();
     }
   }
 
   submitAnswer(): boolean {
-    const stage = this.currentStage$.value;
-    const state = this.state$.value;
-    const challenge = state[stage];
-    if (challenge && challenge.userAnswer === challenge.correctAnswer) {
-      challenge.completed = true;
-      this.state$.next([...state]);
-      return true;
+    const challenges = this.challengesSubject.value;
+    const currentStage = this.currentStageSubject.value;
+    const currentChallenge = challenges[currentStage];
+
+    if (!currentChallenge || !currentChallenge.userAnswer) {
+      return false;
     }
-    return false;
+
+    const isCorrect =
+      currentChallenge.userAnswer.trim().toLowerCase() ===
+      currentChallenge.correctAnswer.trim().toLowerCase();
+
+    if (isCorrect) {
+      challenges[currentStage].isCompleted = true;
+      this.challengesSubject.next([...challenges]);
+      this.saveToStorage();
+    }
+
+    return isCorrect;
   }
 
-  goToNextStage() {
-    if (this.currentStage$.value < this.state$.value.length - 1) {
-      this.currentStage$.next(this.currentStage$.value + 1);
+  goToNextStage(): void {
+    const currentStage = this.currentStageSubject.value;
+    const challenges = this.challengesSubject.value;
+
+    if (currentStage < challenges.length - 1) {
+      this.currentStageSubject.next(currentStage + 1);
+      this.saveToStorage();
     }
   }
 
-  goToPreviousStage() {
-    if (this.currentStage$.value > 0) {
-      this.currentStage$.next(this.currentStage$.value - 1);
+  goToPreviousStage(): void {
+    const currentStage = this.currentStageSubject.value;
+
+    if (currentStage > 0) {
+      this.currentStageSubject.next(currentStage - 1);
+      this.saveToStorage();
     }
   }
 
-  areAllChallengesCompleted() {
-    return this.state$.value.every(c => c.completed);
+  areAllChallengesCompleted(): boolean {
+    return this.challengesSubject.value.every((c) => c.isCompleted);
   }
 
-  resetState() {
-    const newState = this.generateNewChallengeSet();
-    this.state$.next(newState);
-    this.currentStage$.next(0);
-    this.saveState(newState);
-    this.saveCurrentStage(0);
+  resetState(): void {
+    this.initializeDefaultChallenges();
   }
 
-  // --- Persistence ---
-
-  private saveState(state: Challenge[]) {
-    localStorage.setItem('captcha_state', JSON.stringify(state));
-  }
-
-  private loadState(): Challenge[] {
-    const savedState = localStorage.getItem('captcha_state');
-    if (savedState) {
-      return JSON.parse(savedState);
-    }
-    return this.generateNewChallengeSet();
-  }
-
-  private saveCurrentStage(stage: number) {
-    localStorage.setItem('captcha_stage', String(stage));
-  }
-
-  private loadCurrentStage(): number {
-    const savedStage = localStorage.getItem('captcha_stage');
-    return savedStage ? parseInt(savedStage, 10) : 0;
+  clearStorage(): void {
+    localStorage.removeItem(this.STORAGE_KEY);
   }
 }

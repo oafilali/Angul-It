@@ -22,3 +22,178 @@
 .error {
   color: red;
 }
+
+.captcha-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.challenge-section {
+  margin-top: 2rem;
+}
+
+.captcha-display {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  svg {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+  }
+}
+
+// Form styling
+form {
+  margin-top: 1.5rem;
+}
+
+input[type='text'] {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px;
+  font-size: 1.1rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+
+  &.error-input {
+    border-color: #dc3545;
+  }
+}
+
+// Message styling
+.error {
+  color: #dc3545;
+  font-weight: bold;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: #f8d7da;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.success {
+  color: #28a745;
+  font-weight: bold;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: #d4edda;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+// Navigation buttons
+.navigation-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+
+  button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #007bff;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #0056b3;
+      transform: translateY(-2px);
+    }
+
+    &:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  }
+}
+
+// Completion section
+div[class*='completed'] {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #e7f3ff;
+  border-radius: 8px;
+
+  button {
+    margin-top: 1rem;
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .captcha-container {
+    padding: 1rem;
+  }
+
+  .captcha-display svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  input[type='text'] {
+    max-width: 100%;
+  }
+
+  .navigation-buttons {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+      max-width: 300px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .captcha-container {
+    padding: 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .captcha-display svg {
+    width: 100%;
+    height: auto;
+  }
+}
